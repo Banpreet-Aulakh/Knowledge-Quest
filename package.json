@@ -5,7 +5,22 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "type": "module",
   "author": "Banpreet Aulakh",
   "license": "MIT",
-  "description": ""
+  "description": "Let's admit it. Learning is hard. And for people whose hobby is learning new things, we can often get side-tracked and forget the last things we were learning. This concept aims to solve part that problem, (mostly my problem) hoarding books I... I mean you'll never read.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Banpreet-Aulakh/Knowledge-Quest.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/Banpreet-Aulakh/Knowledge-Quest/issues"
+  },
+  "homepage": "https://github.com/Banpreet-Aulakh/Knowledge-Quest#readme",
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0"
+  }
 }
