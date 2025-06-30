@@ -1,13 +1,30 @@
-<%- include('partials/header') %> 
-
-<body>
-    <main>
-
-    </main>
-    
-    <footer>
-        <p>Copyright © <%= new Date().getFullYear() %> </p>
-    </footer>
-</body>
-
-</html>
+<%- include('partials/header') %>
+<main>
+  <h1>Welcome to Knowledge Quest!</h1>
+  <p>
+    Track your reading, visualize your knoweldge growth, and level up! Start by
+    searching for a book and viewing your library.
+  </p>
+  <div class="home-actions">
+    <a href="/search" class="btn">Search Books</a>
+    <a href="/library" class="btn">My Library</a>
+    <a href="/progress" class="btn">View Progress</a>
+  </div>
+  <section class="recent-skills">
+    <h2>Recent Skills Gained</h2>
+    <ul>
+      <li>
+        <strong>Physics</strong> (from
+        <em>Quantum Physics for Dummies</em>)<br />
+        EXP Gained: <span class="exp">120</span>
+        Pages Read: <span class="pages">320</span> / <span class="total-pages">350</span>
+      </li>
+      <li>
+        <strong>Philosophy</strong> (from <em>Meditations</em>)<br />
+        EXP Gained: <span class="exp">80</span>
+        Pages Read: <span class="pages">120</span> / <span class="total-pages">120</span>
+      </li>
+    </ul>
+  </section>
+</main>
+<%- include('partials/footer') %>
