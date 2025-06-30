@@ -1,30 +1,31 @@
 <%- include('partials/header') %>
 <main>
-  <h1>Welcome to Knowledge Quest!</h1>
-  <p>
-    Track your reading, visualize your knoweldge growth, and level up! Start by
-    searching for a book and viewing your library.
-  </p>
-  <div class="home-actions">
-    <a href="/search" class="btn">Search Books</a>
-    <a href="/library" class="btn">My Library</a>
-    <a href="/progress" class="btn">View Progress</a>
-  </div>
-  <section class="recent-skills">
-    <h2>Recent Skills Gained</h2>
-    <ul>
-      <li>
-        <strong>Physics</strong> (from
-        <em>Quantum Physics for Dummies</em>)<br />
-        EXP Gained: <span class="exp">120</span>
-        Pages Read: <span class="pages">320</span> / <span class="total-pages">350</span>
-      </li>
-      <li>
-        <strong>Philosophy</strong> (from <em>Meditations</em>)<br />
-        EXP Gained: <span class="exp">80</span>
-        Pages Read: <span class="pages">120</span> / <span class="total-pages">120</span>
-      </li>
-    </ul>
+  <section id="home-section" class="spa-section">
+    <%- include('partials/home') %>
+  </section>
+  <section id="search-section" class="spa-section" style="display:none;">
+    <%- include('partials/search') %>
+  </section>
+  <section id="library-section" class="spa-section" style="display:none;">
+    <%- include('partials/library') %>
+  </section>
+  <section id="progress-section" class="spa-section" style="display:none;">
+    <%- include('partials/progress') %>
   </section>
 </main>
 <%- include('partials/footer') %>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const sections = document.querySelectorAll(".spa-section");
+    const navLinks = document.querySelectorAll(".spa-nav");
+    navLinks.forEach(btn => {
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        const target = this.getAttribute("data-target");
+        sections.forEach(sec => {
+          sec.style.display = (sec.id === target) ? "block" : "none";
+        });
+      });
+    });
+  });
+</script>
