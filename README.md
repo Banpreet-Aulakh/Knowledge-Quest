@@ -52,4 +52,4 @@ Let's admit it. Learning is hard. And for people whose hobby is learning new thi
 
 This project is licensed under the [MIT License](LICENSE).
 
-*This project is a work in progress! Contributions and feedback are welcome.*
+*This project is a work in progress! Feedback is welcome.*
