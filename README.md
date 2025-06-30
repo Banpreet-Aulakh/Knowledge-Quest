@@ -32,6 +32,8 @@ Let's admit it. Learning is hard. And for people whose hobby is learning new thi
 - Social features (share your progress)
 - Recommendations based on your reading history
 - More advanced EXP algorithms
+- Skill Quizzes on level up 
+- Suggesting Personal Projects
 
 ## Getting Started
 1. Clone the repo
