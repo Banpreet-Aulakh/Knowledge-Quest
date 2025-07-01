@@ -24,6 +24,8 @@ CREATE TABLE UserBook (
     ISBN VARCHAR(20) REFERENCES Book(ISBN),
     SkillName VARCHAR(100) REFERENCES Skill(SkillName),
     SkillLevel INTEGER,
+    PagesRead INTEGER,
+    LastUpdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (UserID, ISBN)
 );
 
