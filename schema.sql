@@ -23,7 +23,6 @@ CREATE TABLE UserBook (
     UserID INTEGER REFERENCES AppUser(ID),
     ISBN VARCHAR(20) REFERENCES Book(ISBN),
     SkillName VARCHAR(100) REFERENCES Skill(SkillName),
-    SkillLevel INTEGER,
     PagesRead INTEGER,
     LastUpdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (UserID, ISBN)
@@ -35,6 +34,6 @@ CREATE TABLE UserSkill (
     UserID INTEGER REFERENCES AppUser(ID),
     ExpGained INTEGER DEFAULT 0,
     ExpToNext INTEGER DEFAULT 0,
-    SkillLevel INTEGER,
+    SkillLevel INTEGER DEFAULT 1,
     PRIMARY KEY (SkillName, UserID)
 );

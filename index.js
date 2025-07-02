@@ -21,6 +21,9 @@ db.connect();
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
+const MAX_LEVEL = 99;
+const EXP_PER_PAGE = 1;
+
 let userId = 1; // placeholder for more users
 
 app.get("/", async (req, res) => {
@@ -45,7 +48,7 @@ app.get("/", async (req, res) => {
 app.get("/library", async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT b.*, ub.PagesRead, us.ExpGained
+      `SELECT b.*, ub.PagesRead, us.ExpGained, us.ExpToNext
        FROM UserBook ub
        JOIN Book b ON ub.ISBN = b.ISBN
        JOIN UserSkill us ON us.UserID = ub.UserID AND us.SkillName = ub.SkillName
@@ -62,6 +65,27 @@ app.get("/library", async (req, res) => {
 
 app.post("/library/update", async (req, res) => {
   console.log(req.body);
+  const pagesRead = req.body.pagesRead;
+  const isbn = req.body.isbn;
+  try {
+    const result = await db.query(
+      `SELECT b.*, ub.PagesRead, us.ExpGained, us.ExpToNext, us.SkillLevel
+       FROM UserBook ub
+       JOIN Book b ON ub.ISBN = b.ISBN
+       JOIN UserSkill us ON us.UserID = ub.UserID AND us.SkillName = ub.SkillName
+       WHERE ub.UserID = $1 AND b.ISBN = $2`,
+      [userId, isbn]
+    );
+    const bookData = result.rows[0];
+    //TODO update endpoint EXP updating
+    if (pagesRead === bookData.pagesread) {
+      return res.redirect("/library");
+    }
+
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send("Internal Server Error");
+  }
   res.redirect("/library");
 });
 
@@ -76,3 +100,7 @@ app.get("/progress", async (req, res) => {
 app.listen(port, () => {
   console.log(`Knowledge Quest running on port ${[port]}.`);
 });
+
+function calculateReqExpToNext(skillLevel) {
+  return (0.55 * skillLevel * skillLevel);
+}
