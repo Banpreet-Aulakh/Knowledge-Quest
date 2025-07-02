@@ -43,7 +43,26 @@ app.get("/", async (req, res) => {
 });
 
 app.get("/library", async (req, res) => {
-  return res.render("library.ejs");
+  try {
+    const result = await db.query(
+      `SELECT b.*, ub.PagesRead, us.ExpGained
+       FROM UserBook ub
+       JOIN Book b ON ub.ISBN = b.ISBN
+       JOIN UserSkill us ON us.UserID = ub.UserID AND us.SkillName = ub.SkillName
+       WHERE ub.UserID = $1
+       ORDER BY ub.LastUpdated DESC`,
+      [userId]
+    );
+    res.render("library.ejs", { data: result.rows });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+app.post("/library/update", async (req, res) => {
+  console.log(req.body);
+  res.redirect("/library");
 });
 
 app.get("/search", async (req, res) => {
