@@ -35,8 +35,6 @@ app.get("/", async (req, res) => {
      LIMIT 3`,
       [userId]
     );
-
-    console.log(result.rows);
     res.render("index.ejs", { data: result.rows });
   } catch (err) {
     console.log(err);

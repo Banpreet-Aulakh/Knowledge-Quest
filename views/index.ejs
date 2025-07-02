@@ -5,18 +5,22 @@
     <p>Track your reading, visualize your knowledge growth, and level up! Start by searching for a book and viewing your library.</p>
     <section class="recent-skills">
       <h2>Recent Skills Gained</h2>
-      <ul>
-        <% for (let i = 0; i < data.length; i++) {%>
-          <li class="recent-book">
-            <img src="<%= data[i].coverurl %>" alt="Book cover for <%= data[i].title %>">
-            <div class="book-info">
-              <strong><%= data[i].subject %></strong> (from <em><%= data[i].title %></em>) <br>
-              <strong>EXP Gained: </strong> <%= data[i].expgained %>/<%= data[i].exptonext %> <br>
-              <strong>Pages: </strong><%= data[i].pagesread %>/<%= data[i].pages%> 
-            </div>
-          </li>
-          <% } %>
-      </ul>
+      <% if (data.length !== 0) { %>
+        <ul>
+          <% for (let i = 0; i < data.length; i++) {%>
+            <li class="recent-book">
+              <img src="<%= data[i].coverurl %>" alt="Book cover for <%= data[i].title %>">
+              <div class="book-info">
+                <strong><%= data[i].subject %></strong> (from <em><%= data[i].title %></em>) <br>
+                <strong>EXP Gained: </strong> <%= data[i].expgained %>/<%= data[i].exptonext %> <br>
+                <strong>Pages: </strong><%= data[i].pagesread %>/<%= data[i].pages%> 
+              </div>
+            </li>
+            <% } %>
+        </ul>
+      <% } else { %>
+        <strong>You haven't added any books to your library!</strong>  
+      <% } %>
     </section>
   </div>
 </main>
