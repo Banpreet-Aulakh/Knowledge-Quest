@@ -6,16 +6,16 @@
     <section class="recent-skills">
       <h2>Recent Skills Gained</h2>
       <ul>
-        <li>
-          <strong>Physics</strong> (from <em>Quantum Physics for Dummies</em>)<br />
-          EXP Gained: <span class="exp">120</span>
-          Pages Read: <span class="pages">320</span> / <span class="total-pages">350</span>
-        </li>
-        <li>
-          <strong>Philosophy</strong> (from <em>Meditations</em>)<br />
-          EXP Gained: <span class="exp">80</span>
-          Pages Read: <span class="pages">120</span> / <span class="total-pages">120</span>
-        </li>
+        <% for (let i = 0; i < data.length; i++) {%>
+          <li class="recent-book">
+            <img src="<%= data[i].coverurl %>" alt="Book cover for <%= data[i].title %>">
+            <div class="book-info">
+              <strong><%= data[i].subject %></strong> (from <em><%= data[i].title %></em>) <br>
+              <strong>EXP Gained: </strong> <%= data[i].expgained %>/<%= data[i].exptonext %> <br>
+              <strong>Pages: </strong><%= data[i].pagesread %>/<%= data[i].pages%> 
+            </div>
+          </li>
+          <% } %>
       </ul>
     </section>
   </div>
