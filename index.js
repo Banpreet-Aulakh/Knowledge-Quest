@@ -64,29 +64,39 @@ app.get("/library", async (req, res) => {
 });
 
 app.post("/library/update", async (req, res) => {
-  console.log(req.body);
-  const pagesRead = req.body.pagesRead;
+  const pagesRead = Number(req.body.pagesRead);
   const isbn = req.body.isbn;
   try {
-    const result = await db.query(
-      `SELECT b.*, ub.PagesRead, us.ExpGained, us.ExpToNext, us.SkillLevel
-       FROM UserBook ub
-       JOIN Book b ON ub.ISBN = b.ISBN
-       JOIN UserSkill us ON us.UserID = ub.UserID AND us.SkillName = ub.SkillName
-       WHERE ub.UserID = $1 AND b.ISBN = $2`,
-      [userId, isbn]
-    );
-    const bookData = result.rows[0];
-    //TODO update endpoint EXP updating
-    if (pagesRead === bookData.pagesread) {
+    const bookData = await getBookUserSkillData(userId, isbn);
+
+    if (
+      !isValidPagesReadUpdate(pagesRead, bookData.pagesread, bookData.pages)
+    ) {
+      return res.status(400).send("Invalid pages read update.");
+    }
+
+    await updateUserBookPages(userId, isbn, pagesRead);
+
+    if (bookData.skilllevel === MAX_LEVEL) {
       return res.redirect("/library");
     }
 
+    const pagesDelta = pagesRead - bookData.pagesread;
+    const { totalExp, nextExp, level } = calculateLevelUp(
+      bookData.expgained,
+      bookData.exptonext,
+      bookData.skilllevel,
+      MAX_LEVEL,
+      pagesDelta
+    );
+
+    await updateUserSkill(userId, bookData.skillname, totalExp, nextExp, level);
+
+    res.redirect("/library");
   } catch (err) {
     console.log(err);
     return res.status(500).send("Internal Server Error");
   }
-  res.redirect("/library");
 });
 
 app.get("/search", async (req, res) => {
@@ -102,5 +112,74 @@ app.listen(port, () => {
 });
 
 function calculateReqExpToNext(skillLevel) {
-  return (0.55 * skillLevel * skillLevel);
+  return 0.55 * skillLevel * skillLevel;
+}
+
+async function getBookUserSkillData(userId, isbn) {
+  const result = await db.query(
+    `SELECT b.*, ub.PagesRead, us.ExpGained, us.ExpToNext, us.SkillLevel, us.SkillName
+     FROM UserBook ub
+     JOIN Book b ON ub.ISBN = b.ISBN
+     JOIN UserSkill us ON us.UserID = ub.UserID AND us.SkillName = ub.SkillName
+     WHERE ub.UserID = $1 AND b.ISBN = $2`,
+    [userId, isbn]
+  );
+  return result.rows[0];
+}
+
+function isValidPagesReadUpdate(newPagesRead, currentPagesRead, totalPages) {
+  return (
+    Number(newPagesRead) > Number(currentPagesRead) &&
+    Number(newPagesRead) <= Number(totalPages)
+  );
+}
+
+function calculateLevelUp(
+  expGained,
+  expToNext,
+  skillLevel,
+  maxLevel,
+  pagesDelta
+) {
+  let totalExp = Number(expGained) + Number(pagesDelta);
+  let level = Number(skillLevel);
+  let nextExp = Number(expToNext);
+
+  while (totalExp >= nextExp && level < maxLevel) {
+    totalExp -= nextExp;
+    level += 1;
+    nextExp = calculateReqExpToNext(level);
+  }
+
+  if (level >= maxLevel) {
+    level = maxLevel;
+    totalExp = 0;
+    nextExp = 0;
+  }
+
+  return { totalExp, nextExp, level };
+}
+
+async function updateUserBookPages(userId, isbn, pagesRead) {
+  await db.query(
+    `UPDATE UserBook
+     SET PagesRead = $1, LastUpdated = NOW()
+     WHERE UserID = $2 AND ISBN = $3`,
+    [pagesRead, userId, isbn]
+  );
+}
+
+async function updateUserSkill(
+  userId,
+  skillName,
+  expGained,
+  expToNext,
+  skillLevel
+) {
+  await db.query(
+    `UPDATE UserSkill
+     SET ExpGained = $1, ExpToNext = $2, SkillLevel = $3
+     WHERE UserID = $4 AND SkillName = $5`,
+    [expGained, expToNext, skillLevel, userId, skillName]
+  );
 }
