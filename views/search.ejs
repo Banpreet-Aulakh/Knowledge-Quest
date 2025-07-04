@@ -1,6 +1,27 @@
 <%- include('partials/header') %>
 <main>
-  <h2>Search Books</h2>
-  <p>This is a test template for the Search Books section.</p>
+  <input type="text" id="book-search-bar" placeholder="Search for a book..." autocomplete="off" />
+  <ul id="autocomplete-list"></ul>
+
+  <div id="edition-section" style="display:none;">
+    <label for="edition-dropdown">Select Edition:</label>
+    <select id="edition-dropdown"></select>
+    <span>or enter ISBN:</span>
+    <input type="text" id="manual-isbn" placeholder="ISBN">
+    <button id="isbn-search-btn">Find Edition</button>
+  </div>
+
+  <div id="preview-section" style="display:none;">
+    <h3>Book Preview</h3>
+    <img id="preview-cover" src="/no-cover.svg" alt="Book cover" style="max-height:100px;">
+    <div id="preview-info"></div>
+    <label>
+      Skill:
+      <input type="text" id="skill-input" value="">
+    </label>
+    <button id="add-to-library-btn">Add to Library</button>
+  </div>
 </main>
+
+<script src="/search.js"></script>
 <%- include('partials/footer') %>
