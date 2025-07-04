@@ -270,6 +270,7 @@ document.getElementById("add-to-library-btn").addEventListener("click", async ()
 
 window.addEventListener('DOMContentLoaded', async () => {
   await fetchSkills();
+  // Replace the skill input with a div for dynamic rendering
   const label = document.querySelector('label[for="skill-input"]') || document.querySelector('label:has(#skill-input)');
   if (label) {
     let skillInput = document.getElementById('skill-input');

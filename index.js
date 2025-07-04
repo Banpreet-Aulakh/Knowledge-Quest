@@ -1,29 +1,12 @@
 import express from "express";
-import bodyParser from "body-parser";
-import dotenv from "dotenv";
-import pg from "pg";
-
-dotenv.config();
+import db from "./db.js";
+import { getBookUserSkillData, updateUserBookPages, updateUserSkill } from "./db-queries.js";
+import { calculateReqExpToNext, isValidPagesReadUpdate, calculateLevelUp } from "./utils.js";
 
 const app = express();
 const port = 3000;
-
-const db = new pg.Client({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
-
-db.connect();
-
-app.use(express.static("public"));
-app.use(express.urlencoded({ extended: true }));
-
 const MAX_LEVEL = 99;
 const EXP_PER_PAGE = 1;
-
 let userId = 1; // placeholder for more users
 
 app.get("/", async (req, res) => {
@@ -99,6 +82,57 @@ app.post("/library/update", async (req, res) => {
   }
 });
 
+app.post("/library/add", async (req, res) => {
+  try {
+    const { title, author, coverurl, pages, subject, isbn } = req.body;
+    if (!title || !subject || !isbn || !pages || pages < 1) {
+      return res.status(400).send("Missing or invalid book data.");
+    }
+
+    const bookResult = await db.query(
+      `INSERT INTO Book (ISBN, Title, Author, CoverURL, Pages)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (ISBN) DO NOTHING
+       RETURNING *`,
+      [isbn, title, author, coverurl, pages]
+    );
+
+    await db.query(
+      `INSERT INTO Skill (SkillName)
+       VALUES ($1)
+       ON CONFLICT (SkillName) DO NOTHING`,
+      [subject]
+    );
+
+    const userBookResult = await db.query(
+      `INSERT INTO UserBook (UserID, ISBN, SkillName, PagesRead, LastUpdated)
+       VALUES ($1, $2, $3, 0, NOW())
+       ON CONFLICT (UserID, ISBN) DO NOTHING
+       RETURNING *`,
+      [userId, isbn, subject]
+    );
+
+    const initialLevel = 1;
+    const initialExp = 0;
+    const expToNext = calculateReqExpToNext(initialLevel);
+    await db.query(
+      `INSERT INTO UserSkill (UserID, SkillName, ExpGained, ExpToNext, SkillLevel)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (UserID, SkillName) DO NOTHING`,
+      [userId, subject, initialExp, expToNext, initialLevel]
+    );
+
+    if (userBookResult.rowCount === 0) {
+      return res.status(409).send("Book already in your library.");
+    }
+
+    res.status(200).redirect("/library");
+  } catch (err) {
+    console.error("Error adding book:", err);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 app.get("/search", async (req, res) => {
   return res.render("search.ejs");
 });
@@ -109,8 +143,10 @@ app.get("/progress", async (req, res) => {
 
 app.get("/skills", async (req, res) => {
   try {
-    const result = await db.query("SELECT SkillName FROM Skill ORDER BY SkillName ASC");
-    const skills = result.rows.map(row => row.skillname);
+    const result = await db.query(
+      "SELECT SkillName FROM Skill ORDER BY SkillName ASC"
+    );
+    const skills = result.rows.map((row) => row.skillname);
     res.json(skills);
   } catch (err) {
     console.error("Error fetching skills:", err);
@@ -118,80 +154,7 @@ app.get("/skills", async (req, res) => {
   }
 });
 
-
 app.listen(port, () => {
   console.log(`Knowledge Quest running on port ${[port]}.`);
 });
 
-function calculateReqExpToNext(skillLevel) {
-  return 0.55 * skillLevel * skillLevel;
-}
-
-async function getBookUserSkillData(userId, isbn) {
-  const result = await db.query(
-    `SELECT b.*, ub.PagesRead, us.ExpGained, us.ExpToNext, us.SkillLevel, us.SkillName
-     FROM UserBook ub
-     JOIN Book b ON ub.ISBN = b.ISBN
-     JOIN UserSkill us ON us.UserID = ub.UserID AND us.SkillName = ub.SkillName
-     WHERE ub.UserID = $1 AND b.ISBN = $2`,
-    [userId, isbn]
-  );
-  return result.rows[0];
-}
-
-function isValidPagesReadUpdate(newPagesRead, currentPagesRead, totalPages) {
-  return (
-    Number(newPagesRead) > Number(currentPagesRead) &&
-    Number(newPagesRead) <= Number(totalPages)
-  );
-}
-
-function calculateLevelUp(
-  expGained,
-  expToNext,
-  skillLevel,
-  maxLevel,
-  pagesDelta
-) {
-  let totalExp = Number(expGained) + Number(pagesDelta);
-  let level = Number(skillLevel);
-  let nextExp = Number(expToNext);
-
-  while (totalExp >= nextExp && level < maxLevel) {
-    totalExp -= nextExp;
-    level += 1;
-    nextExp = calculateReqExpToNext(level);
-  }
-
-  if (level >= maxLevel) {
-    level = maxLevel;
-    totalExp = 0;
-    nextExp = 0;
-  }
-
-  return { totalExp, nextExp, level };
-}
-
-async function updateUserBookPages(userId, isbn, pagesRead) {
-  await db.query(
-    `UPDATE UserBook
-     SET PagesRead = $1, LastUpdated = NOW()
-     WHERE UserID = $2 AND ISBN = $3`,
-    [pagesRead, userId, isbn]
-  );
-}
-
-async function updateUserSkill(
-  userId,
-  skillName,
-  expGained,
-  expToNext,
-  skillLevel
-) {
-  await db.query(
-    `UPDATE UserSkill
-     SET ExpGained = $1, ExpToNext = $2, SkillLevel = $3
-     WHERE UserID = $4 AND SkillName = $5`,
-    [expGained, expToNext, skillLevel, userId, skillName]
-  );
-}
