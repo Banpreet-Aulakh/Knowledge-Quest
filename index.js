@@ -107,6 +107,18 @@ app.get("/progress", async (req, res) => {
   return res.render("progress.ejs");
 });
 
+app.get("/skills", async (req, res) => {
+  try {
+    const result = await db.query("SELECT SkillName FROM Skill ORDER BY SkillName ASC");
+    const skills = result.rows.map(row => row.skillname);
+    res.json(skills);
+  } catch (err) {
+    console.error("Error fetching skills:", err);
+    res.status(500).json([]);
+  }
+});
+
+
 app.listen(port, () => {
   console.log(`Knowledge Quest running on port ${[port]}.`);
 });
