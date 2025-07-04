@@ -1,5 +1,46 @@
 <footer>
     <p>Copyright © <%= new Date().getFullYear() %> </p>
 </footer>
+
+<!-- Skills Modal Placeholder -->
+<div id="skills-modal" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; z-index:1000; background:rgba(0,0,0,0.2);">
+  <div id="skills-modal-content" style="background:#fff; margin:10vh auto; padding:2em; border-radius:8px; width:90%; max-width:400px; position:relative;">
+    <button id="close-skills-modal" style="position:absolute; right:1em; top:1em;">&times;</button>
+    <h2>Your Skills</h2>
+    <ul id="skills-list"></ul>
+  </div>
+</div>
+<button id="open-skills-modal" style="position:fixed; bottom:2em; right:2em; z-index:1100;">Skills</button>
+
+<script>
+document.getElementById("open-skills-modal").onclick = async function() {
+  document.getElementById("skills-modal").style.display = "block";
+  try {
+    const res = await fetch("/api/skills");
+    if (!res.ok) throw new Error("Failed to fetch skills");
+    const skills = await res.json();
+    const list = document.getElementById("skills-list");
+    list.innerHTML = "";
+    if (skills.length === 0) {
+      list.innerHTML = '<li>No skills yet.</li>';
+    } else {
+      skills.forEach(skill => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${skill.skillname}</strong>: Level ${skill.skilllevel} / 99<br>EXP: ${skill.expgained} / ${skill.exptonext}`;
+        list.appendChild(li);
+      });
+    }
+  } catch (e) {
+    document.getElementById("skills-list").innerHTML = '<li>Error loading skills.</li>';
+  }
+};
+document.getElementById("close-skills-modal").onclick = function() {
+  document.getElementById("skills-modal").style.display = "none";
+};
+window.addEventListener("click", function(event) {
+  const modal = document.getElementById("skills-modal");
+  if (event.target === modal) modal.style.display = "none";
+});
+</script>
 </body>
 </html>

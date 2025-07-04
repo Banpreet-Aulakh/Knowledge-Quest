@@ -3,11 +3,16 @@ import db from "./db.js";
 import { getBookUserSkillData, updateUserBookPages, updateUserSkill } from "./db-queries.js";
 import { calculateReqExpToNext, isValidPagesReadUpdate, calculateLevelUp } from "./utils.js";
 
+
 const app = express();
 const port = 3000;
 const MAX_LEVEL = 99;
 const EXP_PER_PAGE = 1;
 let userId = 1; // placeholder for more users
+
+app.use(express.static("public")); 
+app.use(express.urlencoded({ extended: true })); 
+app.use(express.json());
 
 app.get("/", async (req, res) => {
   try {
@@ -148,6 +153,22 @@ app.get("/skills", async (req, res) => {
     );
     const skills = result.rows.map((row) => row.skillname);
     res.json(skills);
+  } catch (err) {
+    console.error("Error fetching skills:", err);
+    res.status(500).json([]);
+  }
+});
+
+app.get("/api/skills", async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT SkillName, SkillLevel, ExpGained, ExpToNext
+       FROM UserSkill
+       WHERE UserID = $1
+       ORDER BY SkillName ASC`,
+      [userId]
+    );
+    res.json(result.rows);
   } catch (err) {
     console.error("Error fetching skills:", err);
     res.status(500).json([]);
