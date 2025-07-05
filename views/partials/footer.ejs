@@ -3,14 +3,14 @@
 </footer>
 
 <!-- Skills Modal Placeholder -->
-<div id="skills-modal" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; z-index:1000; background:rgba(0,0,0,0.2);">
-  <div id="skills-modal-content" style="background:#fff; margin:10vh auto; padding:2em; border-radius:8px; width:90%; max-width:400px; position:relative;">
-    <button id="close-skills-modal" style="position:absolute; right:1em; top:1em;">&times;</button>
+<div id="skills-modal">
+  <div id="skills-modal-content">
+    <button id="close-skills-modal">&times;</button>
     <h2>Your Skills</h2>
     <ul id="skills-list"></ul>
   </div>
 </div>
-<button id="open-skills-modal" style="position:fixed; bottom:2em; right:2em; z-index:1100;">Skills</button>
+<button id="open-skills-modal">Skills</button>
 
 <script>
 document.getElementById("open-skills-modal").onclick = async function() {

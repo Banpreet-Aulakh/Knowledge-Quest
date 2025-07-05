@@ -45,7 +45,7 @@ Let's admit it. Learning is hard. And for people whose hobby is learning new thi
 3. Set up your PostgreSQL database and configure environment variables
 4. Start the server:  
    ```bash
-   node index.js
+   npm start
    ```
 
 ---

@@ -6,17 +6,17 @@
     <section class="recent-skills">
       <h2>Recent Skills Gained</h2>
       <% if (data && data.length !== 0) { %>
-        <ul>
-          <% for (let i = 0; i < data.length; i++) {%>
-            <li class="recent-book">
-              <img src="<%= data[i].coverurl %>" alt="Book cover for <%= data[i].title %>">
-              <div class="book-info">
+        <ul class="library-list">
+          <% for (let i = 0; i < data.length; i++) { %>
+            <li class="library-book">
+              <img src="<%= data[i].coverurl %>" alt="Book cover for <%= data[i].title %>" class="book-cover">
+              <div class="library-book-info">
                 <strong><%= data[i].subject %></strong> (from <em><%= data[i].title %></em>) <br>
-                <strong>EXP Gained: </strong> <%= data[i].expgained %>/<%= data[i].exptonext %> <br>
-                <strong>Pages: </strong><%= data[i].pagesread %>/<%= data[i].pages%> 
+                <span class="text-muted">EXP:</span> <%= data[i].expgained %>/<%= data[i].exptonext %> <br>
+                <span class="text-muted">Pages:</span> <%= data[i].pagesread %>/<%= data[i].pages %>
               </div>
             </li>
-            <% } %>
+          <% } %>
         </ul>
       <% } else { %>
         <strong>You haven't added any books to your library!</strong>  
