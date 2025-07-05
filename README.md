@@ -23,7 +23,7 @@ Let's admit it. Learning is hard. And for people whose hobby is learning new thi
 ## How It Works
 1. **Search for Books:** Use the app to search for books by title, author, or ISBN.
 2. **Add to Your List:** Select books you've completed or are currently reading.
-3. **Track Progress:** Mark books as completed and log how many pages you've read.
+3. **Track Progress:** Log how many pages you've read for each book. Once pages read equals the total pages, the book automatically moves to a "Completed Books" section in your library
 4. **Gain EXP:** Each book gives you EXP based on its length and subject complexity.
 5. **Visualize Growth:** See charts or stats of your knowledge skills by subject.
 

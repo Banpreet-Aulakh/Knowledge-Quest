@@ -2,7 +2,7 @@
 <main>
     <h2>My Library</h2>
     <section class="library-skills">
-      <% if ( data && data.length > 0) { %>
+      <% if (data && data.length > 0) { %>
       <ul class="library-list">
         <% data.forEach(book => { %>
           <li class="library-book">
@@ -23,10 +23,28 @@
           </li>
         <% }) %>
       </ul>
-    <% } else { %>
-      <p>You haven't added any books to your library yet.</p>
-    <% } %>
+      <% } else { %>
+        <p>You haven't added any books to your library yet.</p>
+      <% } %>
     </section>
+
+    <% if (completed && completed.length > 0) { %>
+    <section class="completed-books">
+      <h3>Completed Books</h3>
+      <ul class="library-list completed-list">
+        <% completed.forEach(book => { %>
+          <li class="library-book completed">
+            <img src="<%= book.coverurl %>" alt="Book cover for <%= book.title %>" class="book-cover">
+            <div class="library-book-info">
+              <strong><%= book.title %></strong> by <%= book.author %><br>
+              <em>Subject:</em> <%= book.subject %><br>
+              <span class="completed-label">Completed!</span>
+            </div>
+          </li>
+        <% }) %>
+      </ul>
+    </section>
+    <% } %>
     <script src="/library.js"></script>
 </main>
 <%- include('partials/footer') %>

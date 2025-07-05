@@ -1,8 +1,15 @@
 import express from "express";
 import db from "./db.js";
-import { getBookUserSkillData, updateUserBookPages, updateUserSkill } from "./db-queries.js";
-import { calculateReqExpToNext, isValidPagesReadUpdate, calculateLevelUp } from "./utils.js";
-
+import {
+  getBookUserSkillData,
+  updateUserBookPages,
+  updateUserSkill,
+} from "./db-queries.js";
+import {
+  calculateReqExpToNext,
+  isValidPagesReadUpdate,
+  calculateLevelUp,
+} from "./utils.js";
 
 const app = express();
 const port = 3000;
@@ -10,8 +17,8 @@ const MAX_LEVEL = 99;
 const EXP_PER_PAGE = 1;
 let userId = 1; // placeholder for more users
 
-app.use(express.static("public")); 
-app.use(express.urlencoded({ extended: true })); 
+app.use(express.static("public"));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.get("/", async (req, res) => {
@@ -35,16 +42,30 @@ app.get("/", async (req, res) => {
 
 app.get("/library", async (req, res) => {
   try {
-    const result = await db.query(
+    // Get incomplete books
+    const incomplete = await db.query(
       `SELECT b.*, ub.PagesRead, us.ExpGained, us.ExpToNext
        FROM UserBook ub
        JOIN Book b ON ub.ISBN = b.ISBN
        JOIN UserSkill us ON us.UserID = ub.UserID AND us.SkillName = ub.SkillName
-       WHERE ub.UserID = $1
+       WHERE ub.UserID = $1 AND ub.PagesRead < b.Pages
        ORDER BY ub.LastUpdated DESC`,
       [userId]
     );
-    res.render("library.ejs", { data: result.rows });
+    // Get completed books
+    const completed = await db.query(
+      `SELECT b.*, ub.PagesRead, us.ExpGained, us.ExpToNext
+       FROM UserBook ub
+       JOIN Book b ON ub.ISBN = b.ISBN
+       JOIN UserSkill us ON us.UserID = ub.UserID AND us.SkillName = ub.SkillName
+       WHERE ub.UserID = $1 AND ub.PagesRead = b.Pages
+       ORDER BY ub.LastUpdated DESC`,
+      [userId]
+    );
+    res.render("library.ejs", {
+      data: incomplete.rows,
+      completed: completed.rows,
+    });
   } catch (err) {
     console.log(err);
     res.status(500).send("Internal Server Error");
@@ -57,7 +78,9 @@ app.post("/library/update", async (req, res) => {
   try {
     const bookData = await getBookUserSkillData(userId, isbn);
 
-    if (!isValidPagesReadUpdate(pagesRead, bookData.pagesread, bookData.pages)) {
+    if (
+      !isValidPagesReadUpdate(pagesRead, bookData.pagesread, bookData.pages)
+    ) {
       return res.status(400).send("Invalid pages read update.");
     }
 
@@ -67,7 +90,7 @@ app.post("/library/update", async (req, res) => {
       return res.json({
         expGained: 0,
         skill: bookData.skillname,
-        levelUp: false
+        levelUp: false,
       });
     }
 
@@ -85,7 +108,7 @@ app.post("/library/update", async (req, res) => {
     res.json({
       expGained: pagesDelta,
       skill: bookData.skillname,
-      levelUp: leveledUp || (level > bookData.skilllevel)
+      levelUp: leveledUp || level > bookData.skilllevel,
     });
   } catch (err) {
     console.log(err);
@@ -184,4 +207,3 @@ app.get("/api/skills", async (req, res) => {
 app.listen(port, () => {
   console.log(`Knowledge Quest running on port ${[port]}.`);
 });
-
