@@ -57,20 +57,22 @@ app.post("/library/update", async (req, res) => {
   try {
     const bookData = await getBookUserSkillData(userId, isbn);
 
-    if (
-      !isValidPagesReadUpdate(pagesRead, bookData.pagesread, bookData.pages)
-    ) {
+    if (!isValidPagesReadUpdate(pagesRead, bookData.pagesread, bookData.pages)) {
       return res.status(400).send("Invalid pages read update.");
     }
 
     await updateUserBookPages(userId, isbn, pagesRead);
 
     if (bookData.skilllevel === MAX_LEVEL) {
-      return res.redirect("/library");
+      return res.json({
+        expGained: 0,
+        skill: bookData.skillname,
+        levelUp: false
+      });
     }
 
     const pagesDelta = pagesRead - bookData.pagesread;
-    const { totalExp, nextExp, level } = calculateLevelUp(
+    const { totalExp, nextExp, level, leveledUp } = calculateLevelUp(
       bookData.expgained,
       bookData.exptonext,
       bookData.skilllevel,
@@ -80,7 +82,11 @@ app.post("/library/update", async (req, res) => {
 
     await updateUserSkill(userId, bookData.skillname, totalExp, nextExp, level);
 
-    res.redirect("/library");
+    res.json({
+      expGained: pagesDelta,
+      skill: bookData.skillname,
+      levelUp: leveledUp || (level > bookData.skilllevel)
+    });
   } catch (err) {
     console.log(err);
     return res.status(500).send("Internal Server Error");

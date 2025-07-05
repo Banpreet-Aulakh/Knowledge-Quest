@@ -1,3 +1,41 @@
+.exp-float {
+  position: fixed;
+  left: 50%;
+  bottom: 2.5em;
+  transform: translateX(-50%);
+  font-size: 1.5em;
+  font-family: inherit;
+  font-weight: bold;
+  color: var(--accent-green);
+  text-shadow: 0 2px 8px #000a;
+  pointer-events: none;
+  opacity: 0;
+  animation: exp-float-up 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  z-index: 2000;
+}
+.exp-float.levelup {
+  color: var(--border-gold);
+  text-shadow: 0 2px 16px #bfa046, 0 0 8px #fff8;
+  font-size: 2em;
+}
+@keyframes exp-float-up {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(30px) scale(0.95);
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1.05);
+  }
+  80% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-40px) scale(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-60px) scale(1.1);
+  }
+}
 #book-search-bar {
   background: #23231c;
   color: var(--text-main);
