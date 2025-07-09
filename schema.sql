@@ -10,7 +10,9 @@ CREATE TABLE Book (
 
 -- User Table --
 CREATE TABLE AppUser (
-    ID SERIAL PRIMARY KEY
+    ID SERIAL PRIMARY KEY,
+    Email VARCHAR(20) UNIQUE NOT NULL,
+    Password TEXT NOT NULL
 );
 
 -- Skill Table --

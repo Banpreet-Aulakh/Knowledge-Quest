@@ -10,6 +10,7 @@ import {
   isValidPagesReadUpdate,
   calculateLevelUp,
 } from "./utils.js";
+import { initializeLoginMiddleWare } from "./user-accounts.js";
 
 const app = express();
 const port = 3000;
@@ -20,6 +21,7 @@ let userId = 1; // placeholder for more users
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+initializeLoginMiddleWare(app);
 
 app.get("/", async (req, res) => {
   try {
@@ -202,6 +204,14 @@ app.get("/api/skills", async (req, res) => {
     console.error("Error fetching skills:", err);
     res.status(500).json([]);
   }
+});
+
+app.get("/login", (req, res) => {
+  res.render("login-register.ejs", { showLogin: true });
+});
+
+app.get("/register", (req, res) => {
+  res.render("login-register.ejs", { showLogin: false });
 });
 
 app.listen(port, () => {
