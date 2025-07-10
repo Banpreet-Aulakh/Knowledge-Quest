@@ -10,12 +10,16 @@ Let's admit it. Learning is hard. And for people whose hobby is learning new thi
 - Assign EXP to books based on pages read and subject complexity
 - Visualize your knowledge growth by subject area
 - Store your progress in a relational database for persistence
+- User registration and login with secure password hashing
+- Session-based authentication using Passport.js
 
 ## Tech Stack
-- PostgreSQL 
-- ExpressJS 
-- EJS (Because React is hard... for now)
-- NodeJS 
+- PostgreSQL
+- ExpressJS
+- EJS
+- NodeJS
+- Passport.js (authentication)
+- bcrypt (password hashing)
 
 ## APIs 
 - [OpenLibrary](https://openlibrary.org/developers/api) (Covers, Subjects, and Books endpoints)
@@ -27,23 +31,35 @@ Let's admit it. Learning is hard. And for people whose hobby is learning new thi
 4. **Gain EXP:** Each book gives you EXP based on its length and subject complexity.
 5. **Visualize Growth:** See charts or stats of your knowledge skills by subject.
 
+
 ## Future Ideas
-- User accounts and authentication
+- User accounts and authentication -- DONE
 - Social features (share your progress)
 - Recommendations based on your reading history
 - More advanced EXP algorithms
 - Skill Quizzes on level up 
 - Suggesting Personal Projects
 
+## Authentication
+Users can register with an email and password. Passwords are securely hashed using bcrypt. After registering or logging in, users can track their reading progress and skills.
+
 ## Getting Started
 1. Clone the repo
-2. Install dependencies:  
+2. Install dependencies:
    ```bash
    npm install
-   (npm audit fix) -- if needed
    ```
-3. Set up your PostgreSQL database and configure environment variables
-4. Start the server:  
+3. Create a `.env` file in the project root with:
+   ```
+   SESSION_SECRET=yourSecret
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_USER=your_db_user
+   DB_PASSWORD=your_db_password
+   DB_NAME=your_db_name
+   ```
+4. Set up your PostgreSQL database and configure environment variables
+5. Start the server:
    ```bash
    npm start
    ```
