@@ -40,6 +40,22 @@ Let's admit it. Learning is hard. And for people whose hobby is learning new thi
 - Skill Quizzes on level up 
 - Suggesting Personal Projects
 
+
+## Screenshots
+Below are some screenshots showcasing the main features and basic UI Idea of Knowledge Quest. The inspiration for the color scheme is older games like runescape. 
+
+<div align="center">
+
+<img src="screenshots/LOGIN_PAGE.png" alt="Login Page" width="350" />
+<img src="screenshots/REGISTER_PAGE.png" alt="Register Page" width="350" />
+
+<img src="screenshots/LOGGED_IN_HOME.png" alt="Logged In Home" width="350" />
+<img src="screenshots/LIBRARY.png" alt="Library" width="350" />
+
+<img src="screenshots/SEARCH.png" alt="Search Books" width="350" />
+
+</div>
+
 ## Authentication
 Users can register with an email and password. Passwords are securely hashed using bcrypt. After registering or logging in, users can track their reading progress and skills.
 
