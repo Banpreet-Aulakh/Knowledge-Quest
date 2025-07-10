@@ -10,20 +10,24 @@ import {
   isValidPagesReadUpdate,
   calculateLevelUp,
 } from "./utils.js";
-import { initializeLoginMiddleWare } from "./user-accounts.js";
+import {
+  initializeLoginMiddleWare,
+  attachUserAccountEndpoints,
+  setupPassport,
+  ensureAuthenticated,
+} from "./user-accounts.js";
 
 const app = express();
 const port = 3000;
 const MAX_LEVEL = 99;
 const EXP_PER_PAGE = 1;
-let userId = 1; // placeholder for more users
 
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 initializeLoginMiddleWare(app);
 
-app.get("/", async (req, res) => {
+app.get("/", ensureAuthenticated, async (req, res) => {
   try {
     const result = await db.query(
       `SELECT b.*, ub.PagesRead, us.ExpGained, us.ExpToNext
@@ -33,16 +37,16 @@ app.get("/", async (req, res) => {
      WHERE ub.UserID = $1
      ORDER BY ub.LastUpdated DESC
      LIMIT 3`,
-      [userId]
+      [req.user.id]
     );
-    res.render("index.ejs", { data: result.rows });
+    res.render("index.ejs", { data: result.rows, user: req.user });
   } catch (err) {
     console.log(err);
     res.status(500).send("Internal Server Error");
   }
 });
 
-app.get("/library", async (req, res) => {
+app.get("/library", ensureAuthenticated, async (req, res) => {
   try {
     // Get incomplete books
     const incomplete = await db.query(
@@ -52,7 +56,7 @@ app.get("/library", async (req, res) => {
        JOIN UserSkill us ON us.UserID = ub.UserID AND us.SkillName = ub.SkillName
        WHERE ub.UserID = $1 AND ub.PagesRead < b.Pages
        ORDER BY ub.LastUpdated DESC`,
-      [userId]
+      [req.user.id]
     );
     // Get completed books
     const completed = await db.query(
@@ -62,11 +66,12 @@ app.get("/library", async (req, res) => {
        JOIN UserSkill us ON us.UserID = ub.UserID AND us.SkillName = ub.SkillName
        WHERE ub.UserID = $1 AND ub.PagesRead = b.Pages
        ORDER BY ub.LastUpdated DESC`,
-      [userId]
+      [req.user.id]
     );
     res.render("library.ejs", {
       data: incomplete.rows,
       completed: completed.rows,
+      user: req.user,
     });
   } catch (err) {
     console.log(err);
@@ -75,11 +80,11 @@ app.get("/library", async (req, res) => {
 });
 
 app.get("/search", async (req, res) => {
-  return res.render("search.ejs");
+  return res.render("search.ejs", { user: req.user });
 });
 
 app.get("/progress", async (req, res) => {
-  return res.render("progress.ejs");
+  return res.render("progress.ejs", { user: req.user });
 });
 
 app.get("/skills", async (req, res) => {
@@ -95,14 +100,14 @@ app.get("/skills", async (req, res) => {
   }
 });
 
-app.get("/api/skills", async (req, res) => {
+app.get("/api/skills", ensureAuthenticated, async (req, res) => {
   try {
     const result = await db.query(
       `SELECT SkillName, SkillLevel, ExpGained, ExpToNext
        FROM UserSkill
        WHERE UserID = $1
        ORDER BY SkillName ASC`,
-      [userId]
+      [req.user.id]
     );
     res.json(result.rows);
   } catch (err) {
@@ -112,18 +117,18 @@ app.get("/api/skills", async (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  res.render("login-register.ejs", { showLogin: true });
+  res.render("login-register.ejs", { showLogin: true, user: req.user });
 });
 
 app.get("/register", (req, res) => {
-  res.render("login-register.ejs", { showLogin: false });
+  res.render("login-register.ejs", { showLogin: false, user: req.user });
 });
 
-app.post("/library/update", async (req, res) => {
+app.post("/library/update", ensureAuthenticated, async (req, res) => {
   const pagesRead = Number(req.body.pagesRead);
   const isbn = req.body.isbn;
   try {
-    const bookData = await getBookUserSkillData(userId, isbn);
+    const bookData = await getBookUserSkillData(req.user.id, isbn);
 
     if (
       !isValidPagesReadUpdate(pagesRead, bookData.pagesread, bookData.pages)
@@ -131,7 +136,7 @@ app.post("/library/update", async (req, res) => {
       return res.status(400).send("Invalid pages read update.");
     }
 
-    await updateUserBookPages(userId, isbn, pagesRead);
+    await updateUserBookPages(req.user.id, isbn, pagesRead);
 
     if (bookData.skilllevel === MAX_LEVEL) {
       return res.json({
@@ -150,7 +155,13 @@ app.post("/library/update", async (req, res) => {
       pagesDelta
     );
 
-    await updateUserSkill(userId, bookData.skillname, totalExp, nextExp, level);
+    await updateUserSkill(
+      req.user.id,
+      bookData.skillname,
+      totalExp,
+      nextExp,
+      level
+    );
 
     res.json({
       expGained: pagesDelta,
@@ -163,7 +174,7 @@ app.post("/library/update", async (req, res) => {
   }
 });
 
-app.post("/library/add", async (req, res) => {
+app.post("/library/add", ensureAuthenticated, async (req, res) => {
   try {
     const { title, author, coverurl, pages, subject, isbn } = req.body;
     if (!title || !subject || !isbn || !pages || pages < 1) {
@@ -190,7 +201,7 @@ app.post("/library/add", async (req, res) => {
        VALUES ($1, $2, $3, 0, NOW())
        ON CONFLICT (UserID, ISBN) DO NOTHING
        RETURNING *`,
-      [userId, isbn, subject]
+      [req.user.id, isbn, subject]
     );
 
     const initialLevel = 1;
@@ -200,7 +211,7 @@ app.post("/library/add", async (req, res) => {
       `INSERT INTO UserSkill (UserID, SkillName, ExpGained, ExpToNext, SkillLevel)
        VALUES ($1, $2, $3, $4, $5)
        ON CONFLICT (UserID, SkillName) DO NOTHING`,
-      [userId, subject, initialExp, expToNext, initialLevel]
+      [req.user.id, subject, initialExp, expToNext, initialLevel]
     );
 
     if (userBookResult.rowCount === 0) {
@@ -213,6 +224,9 @@ app.post("/library/add", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
+setupPassport(db);
+attachUserAccountEndpoints(app, db);
 
 app.listen(port, () => {
   console.log(`Knowledge Quest running on port ${[port]}.`);

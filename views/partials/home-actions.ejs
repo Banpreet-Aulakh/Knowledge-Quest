@@ -1,6 +1,12 @@
 <div class="auth-actions-fixed">
-  <a href="/login" class="btn btn-auth">Login</a>
-  <a href="/register" class="btn btn-auth">Register</a>
+  <% if (typeof user !== 'undefined' && user && user.id) { %>
+    <form action="/logout" method="POST" style="display:inline;">
+      <button type="submit" class="btn btn-auth">Logout</button>
+    </form>
+  <% } else { %>
+    <a href="/login" class="btn btn-auth">Login</a>
+    <a href="/register" class="btn btn-auth">Register</a>
+  <% } %>
 </div>
 <div class="home-actions-center">
   <nav class="home-actions">
