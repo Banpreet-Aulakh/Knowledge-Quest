@@ -74,6 +74,51 @@ app.get("/library", async (req, res) => {
   }
 });
 
+app.get("/search", async (req, res) => {
+  return res.render("search.ejs");
+});
+
+app.get("/progress", async (req, res) => {
+  return res.render("progress.ejs");
+});
+
+app.get("/skills", async (req, res) => {
+  try {
+    const result = await db.query(
+      "SELECT SkillName FROM Skill ORDER BY SkillName ASC"
+    );
+    const skills = result.rows.map((row) => row.skillname);
+    res.json(skills);
+  } catch (err) {
+    console.error("Error fetching skills:", err);
+    res.status(500).json([]);
+  }
+});
+
+app.get("/api/skills", async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT SkillName, SkillLevel, ExpGained, ExpToNext
+       FROM UserSkill
+       WHERE UserID = $1
+       ORDER BY SkillName ASC`,
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching skills:", err);
+    res.status(500).json([]);
+  }
+});
+
+app.get("/login", (req, res) => {
+  res.render("login-register.ejs", { showLogin: true });
+});
+
+app.get("/register", (req, res) => {
+  res.render("login-register.ejs", { showLogin: false });
+});
+
 app.post("/library/update", async (req, res) => {
   const pagesRead = Number(req.body.pagesRead);
   const isbn = req.body.isbn;
@@ -167,51 +212,6 @@ app.post("/library/add", async (req, res) => {
     console.error("Error adding book:", err);
     res.status(500).send("Internal Server Error");
   }
-});
-
-app.get("/search", async (req, res) => {
-  return res.render("search.ejs");
-});
-
-app.get("/progress", async (req, res) => {
-  return res.render("progress.ejs");
-});
-
-app.get("/skills", async (req, res) => {
-  try {
-    const result = await db.query(
-      "SELECT SkillName FROM Skill ORDER BY SkillName ASC"
-    );
-    const skills = result.rows.map((row) => row.skillname);
-    res.json(skills);
-  } catch (err) {
-    console.error("Error fetching skills:", err);
-    res.status(500).json([]);
-  }
-});
-
-app.get("/api/skills", async (req, res) => {
-  try {
-    const result = await db.query(
-      `SELECT SkillName, SkillLevel, ExpGained, ExpToNext
-       FROM UserSkill
-       WHERE UserID = $1
-       ORDER BY SkillName ASC`,
-      [userId]
-    );
-    res.json(result.rows);
-  } catch (err) {
-    console.error("Error fetching skills:", err);
-    res.status(500).json([]);
-  }
-});
-
-app.get("/login", (req, res) => {
-  res.render("login-register.ejs", { showLogin: true });
-});
-
-app.get("/register", (req, res) => {
-  res.render("login-register.ejs", { showLogin: false });
 });
 
 app.listen(port, () => {

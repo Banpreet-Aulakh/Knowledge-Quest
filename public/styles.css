@@ -373,4 +373,81 @@ li {
   transform: scale(1.07);
 }
 
+/* Responsive styles for auth and home actions */
+@media (max-width: 700px) {
+  .auth-actions-fixed {
+    position: static;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5em;
+    margin: 1em 0 0.5em 0;
+    right: 0;
+    top: 0;
+  }
+  .auth-actions-fixed .btn-auth {
+    width: 100%;
+    min-width: 80px;
+    font-size: 0.95em;
+    padding: 0.4em 0.7em;
+  }
+  .home-actions-center {
+    width: 100vw;
+    margin-top: 2em;
+    margin-bottom: 1em;
+  }
+  .home-actions {
+    flex-direction: column;
+    gap: 1em;
+    margin: 1em 0;
+  }
+  .home-actions .btn {
+    width: 100%;
+    font-size: 1em;
+    padding: 0.7em 1em;
+  }
+}
+
+/* Responsive styles for login/register container and text */
+.auth-container {
+  max-width: 400px;
+  margin: 2em auto;
+  padding: 2em 1em;
+  background: var(--bg-panel);
+  border-radius: 10px;
+  box-shadow: 0 2px 16px #0005;
+}
+
+.auth-form label,
+.auth-form input {
+  display: block;
+  margin-bottom: 10px;
+}
+@media (max-width: 700px) {
+  .auth-container {
+    max-width: 95vw;
+    padding: 1.2em 0.5em;
+  }
+  .auth-container h2 {
+    font-size: 1.3em;
+    text-align: center;
+  }
+  .auth-form label {
+    font-size: 1em;
+  }
+  .auth-form input {
+    font-size: 1em;
+    padding: 0.4em 0.7em;
+    display: block;
+    margin-bottom: 10px;
+  }
+  .auth-form button {
+    font-size: 1em;
+    padding: 0.5em 1em;
+  }
+  .auth-container p {
+    font-size: 0.95em;
+    text-align: center;
+  }
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
