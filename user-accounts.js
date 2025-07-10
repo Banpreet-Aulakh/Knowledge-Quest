@@ -46,7 +46,7 @@ export function attachUserAccountEndpoints(app, db) {
             const user = result.rows[0];
             req.login(user, (err) => {
               console.log(err);
-              res.redirect("/register");
+              res.redirect("/");
             });
           }
         });
