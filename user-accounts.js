@@ -126,7 +126,7 @@ export function setupPassport(db) {
 }
 
 export function ensureAuthenticated(req, res, next) {
-  if (!req.user || !req.user.id) {
+  if (!req.isAuthenticated()) {
     return res.redirect("/login");
   }
   next();
