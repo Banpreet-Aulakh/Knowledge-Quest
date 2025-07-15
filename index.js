@@ -1,4 +1,5 @@
 import express from "express";
+import { rateLimit } from "express-rate-limit";
 import db from "./db.js";
 import {
   getBookUserSkillData,
@@ -21,11 +22,19 @@ const app = express();
 const port = process.env.PORT || 3000;
 const MAX_LEVEL = 99;
 const EXP_PER_PAGE = 1;
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 Mins
+  max: 10, // 10 per IP
+  message: "Too many login attempts from this IP. Please try again later."
+});
 
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 initializeLoginMiddleWare(app);
+
+app.use('/login', authLimiter);
+app.use('/register', authLimiter);
 
 app.get("/", ensureAuthenticated, async (req, res) => {
   try {
