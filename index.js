@@ -18,7 +18,7 @@ import {
 } from "./user-accounts.js";
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const MAX_LEVEL = 99;
 const EXP_PER_PAGE = 1;
 
