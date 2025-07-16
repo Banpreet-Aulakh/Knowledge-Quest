@@ -79,8 +79,10 @@ Users can register with an email and password. Passwords are securely hashed usi
    ```bash
    npm start
    ```
-
 ---
+
+## Deployment
+I've deployed a demo of the app on Render! [Demo](https://knowledge-quest-1hvw.onrender.com/)
 
 ## License
 
