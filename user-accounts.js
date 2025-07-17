@@ -2,8 +2,14 @@ import bcrypt from "bcrypt";
 import passport from "passport";
 import session from "express-session";
 import { Strategy } from "passport-local";
+import { rateLimit } from "express-rate-limit";
 
 const saltRounds = 10;
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 Mins
+  max: 10, // 10 per IP
+  message: "Too many login attempts from this IP. Please try again later.",
+});
 
 export function initializeLoginMiddleWare(app) {
   app.use(
@@ -21,7 +27,7 @@ export function initializeLoginMiddleWare(app) {
 }
 
 export function attachUserAccountEndpoints(app, db) {
-  app.post("/register", async (req, res) => {
+  app.post("/register", authLimiter, async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
     try {
@@ -58,6 +64,7 @@ export function attachUserAccountEndpoints(app, db) {
 
   app.post(
     "/login",
+    authLimiter,
     passport.authenticate("local", {
       successRedirect: "/",
       failureRedirect: "/login",
