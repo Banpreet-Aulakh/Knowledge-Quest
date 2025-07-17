@@ -88,11 +88,11 @@ app.get("/library", ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.get("/search", async (req, res) => {
+app.get("/search", ensureAuthenticated, async (req, res) => {
   return res.render("search.ejs", { user: req.user });
 });
 
-app.get("/progress", async (req, res) => {
+app.get("/progress", ensureAuthenticated, async (req, res) => {
   return res.render("progress.ejs", { user: req.user });
 });
 
