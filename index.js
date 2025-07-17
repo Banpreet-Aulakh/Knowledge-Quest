@@ -33,8 +33,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 initializeLoginMiddleWare(app);
 
-app.use('/login', authLimiter);
-app.use('/register', authLimiter);
+app.post('/login', authLimiter);
+app.post('/register', authLimiter);
 
 app.get("/", ensureAuthenticated, async (req, res) => {
   try {
