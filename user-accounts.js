@@ -22,7 +22,7 @@ export function initializeLoginMiddleWare(app) {
 
 export function attachUserAccountEndpoints(app, db) {
   app.post("/register", async (req, res) => {
-    const email = req.body.email;
+    const email = req.body.username; // Frontend sends username, but we'll use it as email
     const password = req.body.password;
     try {
       const checkResult = await db.query(
@@ -30,57 +30,65 @@ export function attachUserAccountEndpoints(app, db) {
         [email]
       );
       if (checkResult.rows.length > 0) {
-        req.login(checkResult, (err) => {
-          console.log(err);
-          res.status(500).send("Account found but error logging in.");
-        });
+        return res.status(400).json({ error: "Email already exists" });
       } else {
         bcrypt.hash(password, saltRounds, async (err, hash) => {
           if (err) {
             console.error("Error hashing password:", err);
+            return res.status(500).json({ error: "Internal server error" });
           } else {
-            const result = await db.query(
-              "INSERT INTO AppUser (email, password) VALUES ($1, $2) RETURNING *",
-              [email, hash]
-            );
-            const user = result.rows[0];
-            req.login(user, (err) => {
-              console.log(err);
-              res.redirect("/");
-            });
+            try {
+              const result = await db.query(
+                "INSERT INTO AppUser (email, password) VALUES ($1, $2) RETURNING *",
+                [email, hash]
+              );
+              const user = result.rows[0];
+              req.login(user, (err) => {
+                if (err) {
+                  console.log(err);
+                  return res.status(500).json({ error: "Error logging in after registration" });
+                }
+                res.json({ user: user });
+              });
+            } catch (insertErr) {
+              console.log(insertErr);
+              return res.status(500).json({ error: "Error creating user" });
+            }
           }
         });
       }
     } catch (err) {
       console.log(err);
+      return res.status(500).json({ error: "Internal server error" });
     }
   });
 
   app.post(
     "/login",
-    passport.authenticate("local", {
-      successRedirect: "/",
-      failureRedirect: "/login",
-    })
+    passport.authenticate("local", { session: true }),
+    (req, res) => {
+      res.json({ user: req.user });
+    }
   );
 
-  app.post("/logout", (req, res) => {
+  app.post("/logout", (req, res, next) => {
     req.logout(function (err) {
       if (err) {
         return next(err);
       }
-      res.redirect("/");
+      res.json({ success: true });
     });
   });
 }
+
 export function setupPassport(db) {
   passport.use(
     "local",
-    new Strategy({ usernameField: "email" }, async (email, password, cb) => {
+    new Strategy({ usernameField: "username" }, async (username, password, cb) => {
       try {
         const result = await db.query(
           "SELECT * FROM AppUser WHERE email = $1",
-          [email]
+          [username] // Frontend sends username, but we'll use it as email
         );
         console.log("LOGGING IN");
         if (result.rows.length > 0) {
@@ -127,7 +135,7 @@ export function setupPassport(db) {
 
 export function ensureAuthenticated(req, res, next) {
   if (!req.isAuthenticated()) {
-    return res.redirect("/login");
+    return res.status(401).json({ error: "Not authenticated" });
   }
   next();
 }
