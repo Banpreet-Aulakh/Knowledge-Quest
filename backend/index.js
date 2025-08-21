@@ -23,12 +23,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const MAX_LEVEL = 99;
 const EXP_PER_PAGE = 1;
 
 // Middleware
-app.use(express.static("public"));
+// Serve frontend build when in production from ../frontend/dist
+app.use(express.static(path.join(__dirname, '..', 'frontend', 'dist')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 initializeLoginMiddleWare(app);
@@ -224,12 +225,11 @@ app.post("/library/add", ensureAuthenticated, async (req, res) => {
 setupPassport(db);
 attachUserAccountEndpoints(app, db);
 
-// Serve React app for all other routes
-// Commented out during development - React app runs on separate port
-// app.get("*", (req, res) => {
-//   res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
-// });
+// Serve React app for all other routes in production
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'));
+});
 
 app.listen(port, () => {
-  console.log(`Knowledge Quest running on port ${[port]}.`);
+  console.log(`Knowledge Quest running on port ${port}.`);
 });
