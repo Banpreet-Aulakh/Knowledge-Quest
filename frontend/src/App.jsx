@@ -59,15 +59,15 @@ function App() {
         <Routes>
           <Route 
             path="/" 
-            element={user ? <Home user={user} /> : <Navigate to="/login" />} 
+            element={user ? <Home /> : <Navigate to="/login" />} 
           />
           <Route 
             path="/library" 
-            element={user ? <Library user={user} /> : <Navigate to="/login" />} 
+            element={user ? <Library /> : <Navigate to="/login" />} 
           />
           <Route 
             path="/search" 
-            element={user ? <Search user={user} /> : <Navigate to="/login" />} 
+            element={user ? <Search /> : <Navigate to="/login" />} 
           />
           <Route 
             path="/login" 

@@ -37,7 +37,7 @@ const Login = ({ onLogin }) => {
       } else {
         setError('Invalid username or password');
       }
-    } catch (error) {
+    } catch {
       setError('An error occurred. Please try again.');
     }
   };
