@@ -231,5 +231,5 @@ attachUserAccountEndpoints(app, db);
 // });
 
 app.listen(port, () => {
-  console.log(`Knowledge Quest running on port ${[port]}.`);
+  console.log(`Knowledge Quest running on port ${port}.`);
 });

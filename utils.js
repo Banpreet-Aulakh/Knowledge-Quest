@@ -19,11 +19,14 @@ export function calculateLevelUp(
   let totalExp = Number(expGained) + Number(pagesDelta);
   let level = Number(skillLevel);
   let nextExp = Number(expToNext);
+  const originalLevel = Number(skillLevel);
+  let leveledUp = false;
 
   while (totalExp >= nextExp && level < maxLevel) {
     totalExp -= nextExp;
     level += 1;
     nextExp = calculateReqExpToNext(level);
+    leveledUp = true;
   }
 
   if (level >= maxLevel) {
@@ -32,5 +35,5 @@ export function calculateLevelUp(
     nextExp = 0;
   }
 
-  return { totalExp, nextExp, level };
+  return { totalExp, nextExp, level, leveledUp };
 }
