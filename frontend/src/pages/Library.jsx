@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import BookCard from './BookCard';
-import ExpFloater from './ExpFloater';
+import BookCard from '../components/BookCard';
+import ExpFloater from '../components/ExpFloater';
 
 const Library = () => {
   const [data, setData] = useState([]);

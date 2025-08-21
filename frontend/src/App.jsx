@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
-import Home from './components/Home';
-import Library from './components/Library';
-import Search from './components/Search';
-import Login from './components/Login';
-import Register from './components/Register';
+import Home from './pages/Home';
+import Library from './pages/Library';
+import Search from './pages/Search';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import SkillsModal from './components/SkillsModal';
 import SkillsButton from './components/SkillsButton';
 import './styles.css';
@@ -82,7 +82,10 @@ function App() {
         {/* Skills Modal and Button - only show when user is logged in */}
         {user && (
           <>
-            <SkillsButton onClick={() => setSkillsModalOpen(true)} />
+            <SkillsButton onClick={() => {
+              setSkillsModalOpen(true)
+              console.log("button clicked!");
+              }} />
             <SkillsModal 
               isOpen={skillsModalOpen} 
               onClose={() => setSkillsModalOpen(false)} 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import BookSearchBar from './BookSearchBar';
-import EditionSelector from './EditionSelector';
-import BookPreview from './BookPreview';
+import BookSearchBar from '../components/BookSearchBar';
+import EditionSelector from '../components/EditionSelector';
+import BookPreview from '../components/BookPreview';
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
