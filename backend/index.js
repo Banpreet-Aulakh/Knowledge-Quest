@@ -16,18 +16,26 @@ import {
   setupPassport,
   ensureAuthenticated,
 } from "./user-accounts.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const MAX_LEVEL = 99;
 const EXP_PER_PAGE = 1;
 
-app.use(express.static("public"));
+// Middleware
+// Serve frontend build when in production from ../frontend/dist
+app.use(express.static(path.join(__dirname, '..', 'frontend', 'dist')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 initializeLoginMiddleWare(app);
 
-app.get("/", ensureAuthenticated, async (req, res) => {
+// API Routes
+app.get("/api/home", ensureAuthenticated, async (req, res) => {
   try {
     const result = await db.query(
       `SELECT b.*, ub.PagesRead, us.ExpGained, us.ExpToNext
@@ -39,14 +47,14 @@ app.get("/", ensureAuthenticated, async (req, res) => {
      LIMIT 3`,
       [req.user.id]
     );
-    res.render("index.ejs", { data: result.rows, user: req.user });
+    res.json({ data: result.rows, user: req.user });
   } catch (err) {
     console.log(err);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-app.get("/library", ensureAuthenticated, async (req, res) => {
+app.get("/api/library", ensureAuthenticated, async (req, res) => {
   try {
     // Get incomplete books
     const incomplete = await db.query(
@@ -68,36 +76,19 @@ app.get("/library", ensureAuthenticated, async (req, res) => {
        ORDER BY ub.LastUpdated DESC`,
       [req.user.id]
     );
-    res.render("library.ejs", {
+    res.json({
       data: incomplete.rows,
       completed: completed.rows,
       user: req.user,
     });
   } catch (err) {
     console.log(err);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-app.get("/search", async (req, res) => {
-  return res.render("search.ejs", { user: req.user });
-});
-
-app.get("/progress", async (req, res) => {
-  return res.render("progress.ejs", { user: req.user });
-});
-
-app.get("/skills", async (req, res) => {
-  try {
-    const result = await db.query(
-      "SELECT SkillName FROM Skill ORDER BY SkillName ASC"
-    );
-    const skills = result.rows.map((row) => row.skillname);
-    res.json(skills);
-  } catch (err) {
-    console.error("Error fetching skills:", err);
-    res.status(500).json([]);
-  }
+app.get("/api/user", (req, res) => {
+  res.json({ user: req.user });
 });
 
 app.get("/api/skills", ensureAuthenticated, async (req, res) => {
@@ -116,12 +107,17 @@ app.get("/api/skills", ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.get("/login", (req, res) => {
-  res.render("login-register.ejs", { showLogin: true, user: req.user });
-});
-
-app.get("/register", (req, res) => {
-  res.render("login-register.ejs", { showLogin: false, user: req.user });
+app.get("/skills", async (req, res) => {
+  try {
+    const result = await db.query(
+      "SELECT SkillName FROM Skill ORDER BY SkillName ASC"
+    );
+    const skills = result.rows.map((row) => row.skillname);
+    res.json(skills);
+  } catch (err) {
+    console.error("Error fetching skills:", err);
+    res.status(500).json([]);
+  }
 });
 
 app.post("/library/update", ensureAuthenticated, async (req, res) => {
@@ -133,7 +129,7 @@ app.post("/library/update", ensureAuthenticated, async (req, res) => {
     if (
       !isValidPagesReadUpdate(pagesRead, bookData.pagesread, bookData.pages)
     ) {
-      return res.status(400).send("Invalid pages read update.");
+      return res.status(400).json({ error: "Invalid pages read update." });
     }
 
     await updateUserBookPages(req.user.id, isbn, pagesRead);
@@ -170,7 +166,7 @@ app.post("/library/update", ensureAuthenticated, async (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    return res.status(500).send("Internal Server Error");
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
@@ -178,7 +174,7 @@ app.post("/library/add", ensureAuthenticated, async (req, res) => {
   try {
     const { title, author, coverurl, pages, subject, isbn } = req.body;
     if (!title || !subject || !isbn || !pages || pages < 1) {
-      return res.status(400).send("Missing or invalid book data.");
+      return res.status(400).json({ error: "Missing or invalid book data." });
     }
 
     const bookResult = await db.query(
@@ -215,19 +211,25 @@ app.post("/library/add", ensureAuthenticated, async (req, res) => {
     );
 
     if (userBookResult.rowCount === 0) {
-      return res.status(409).send("Book already in your library.");
+      return res.status(409).json({ error: "Book already in your library." });
     }
 
-    res.status(200).redirect("/library");
+    res.status(200).json({ success: true, message: "Book added to library" });
   } catch (err) {
     console.error("Error adding book:", err);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
+// Setup Passport and user account endpoints
 setupPassport(db);
 attachUserAccountEndpoints(app, db);
 
+// Serve React app for all other routes in production
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'));
+});
+
 app.listen(port, () => {
-  console.log(`Knowledge Quest running on port ${[port]}.`);
+  console.log(`Knowledge Quest running on port ${port}.`);
 });

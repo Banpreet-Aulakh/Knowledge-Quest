@@ -12,11 +12,12 @@ Let's admit it. Learning is hard. And for people whose hobby is learning new thi
 - Store your progress in a relational database for persistence
 - User registration and login with secure password hashing
 - Session-based authentication using Passport.js
+- React SPA Functionality!
 
 ## Tech Stack
 - PostgreSQL
 - ExpressJS
-- EJS
+- React
 - NodeJS
 - Passport.js (authentication)
 - bcrypt (password hashing)

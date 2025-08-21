@@ -1,0 +1,112 @@
+/* CSS Variables - matching the original theme */
+:root {
+  --bg-main: #2b2b26;
+  --bg-panel: #3a372c;
+  --border-gold: #bfa046;
+  --text-main: #e0d8b0;
+  --text-muted: #b0a890;
+  --accent-blue: #3b5c7e;
+  --accent-green: #4e6a4e;
+  --accent-red: #7e3b3b;
+  --button-bg: #4e4a3a;
+  --button-hover: #bfa046;
+}
+
+#skills-modal {
+  display: flex;
+  position: fixed;
+  left: 0; 
+  top: 0;
+  width: 100vw; 
+  height: 100vh;
+  z-index: 1000;
+  background: rgba(43, 43, 38, 0.85);
+  align-items: center;
+  justify-content: center;
+}
+
+#skills-modal-content {
+  background: var(--bg-panel);
+  border: 2.5px solid var(--border-gold);
+  color: var(--text-main);
+  font-family: inherit;
+  margin: 10vh auto;
+  padding: 2em;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  position: relative;
+  box-shadow: 0 0 32px #000a;
+}
+
+#close-skills-modal {
+  position: absolute;
+  right: 1em;
+  top: 1em;
+  background: var(--button-bg);
+  color: var(--text-main);
+  border: 2px solid var(--border-gold);
+  border-radius: 6px;
+  width: 3.5em;
+  height: 2.2em;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0;
+}
+
+#close-skills-modal:hover {
+  background: var(--button-hover);
+  color: #23231c;
+}
+
+#skills-list {
+  margin-top: 1.5em;
+  padding: 0;
+  list-style: none;
+}
+
+#skills-list li {
+  background: #23231c;
+  border: 1px solid var(--border-gold);
+  border-radius: 4px;
+  margin-bottom: 0.7em;
+  padding: 0.7em 1em;
+  font-size: 1em;
+  color: var(--text-main);
+  box-shadow: 0 2px 8px #0004;
+}
+
+#open-skills-modal {
+  position: fixed;
+  bottom: 2em;
+  right: 2em;
+  z-index: 1100;
+  background: var(--button-bg);
+  color: var(--text-main);
+  border: 2.5px solid var(--border-gold);
+  border-radius: 8px;
+  width: 140px;
+  height: 48px;
+  font-size: 1.1em;
+  font-family: inherit;
+  font-weight: bold;
+  box-shadow: 0 4px 16px #0007;
+  transition: background 0.2s, color 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+#open-skills-modal:hover {
+  background: var(--button-hover);
+  color: #23231c;
+  transform: scale(1.07);
+}
