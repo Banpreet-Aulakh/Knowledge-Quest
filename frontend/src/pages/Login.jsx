@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const Register = ({ onLogin }) => {
+const Login = ({ onLogin }) => {
   const [formData, setFormData] = useState({
     username: '',
-    password: '',
-    confirmPassword: ''
+    password: ''
   });
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -21,21 +20,13 @@ const Register = ({ onLogin }) => {
     e.preventDefault();
     setError('');
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
     try {
-      const response = await fetch('/register', {
+      const response = await fetch('/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: new URLSearchParams({
-          username: formData.username,
-          password: formData.password
-        }),
+        body: new URLSearchParams(formData),
         credentials: 'include'
       });
 
@@ -44,10 +35,9 @@ const Register = ({ onLogin }) => {
         onLogin(userData.user);
         navigate('/');
       } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Registration failed');
+        setError('Invalid username or password');
       }
-    } catch (error) {
+    } catch {
       setError('An error occurred. Please try again.');
     }
   };
@@ -55,7 +45,7 @@ const Register = ({ onLogin }) => {
   return (
     <main>
       <div className="auth-container">
-        <h2>Register</h2>
+        <h2>Login</h2>
         <form className="auth-form" onSubmit={handleSubmit}>
           {error && <p style={{ color: 'var(--accent-red)' }}>{error}</p>}
           <label htmlFor="username">Username:</label>
@@ -76,23 +66,14 @@ const Register = ({ onLogin }) => {
             onChange={handleChange}
             required
           />
-          <label htmlFor="confirmPassword">Confirm Password:</label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-          />
-          <button type="submit">Register</button>
+          <button type="submit">Login</button>
         </form>
         <p>
-          Already have an account? <Link to="/login">Login here</Link>
+          Don't have an account? <Link to="/register">Register here</Link>
         </p>
       </div>
     </main>
   );
 };
 
-export default Register;
+export default Login;

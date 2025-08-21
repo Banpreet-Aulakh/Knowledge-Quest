@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import BookCard from '../components/BookCard';
 
-const Home = ({ user }) => {
+const Home = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -36,18 +37,7 @@ const Home = ({ user }) => {
           {data && data.length !== 0 ? (
             <ul className="library-list">
               {data.map((book, i) => (
-                <li key={i} className="library-book">
-                  <img 
-                    src={book.coverurl} 
-                    alt={`Book cover for ${book.title}`} 
-                    className="book-cover"
-                  />
-                  <div className="library-book-info">
-                    <strong>{book.subject}</strong> (from <em>{book.title}</em>) <br />
-                    <span className="text-muted">EXP:</span> {book.expgained}/{book.exptonext} <br />
-                    <span className="text-muted">Pages:</span> {book.pagesread}/{book.pages}
-                  </div>
-                </li>
+                <BookCard key={i} book={book} type="home" />
               ))}
             </ul>
           ) : (

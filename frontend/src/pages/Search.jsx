@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BookSearchBar from '../components/BookSearchBar';
+import EditionSelector from '../components/EditionSelector';
+import BookPreview from '../components/BookPreview';
 
-const Search = ({ user }) => {
+const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [autocompleteList, setAutocompleteList] = useState([]);
   const [selectedWork, setSelectedWork] = useState(null);
-  const [selectedEdition, setSelectedEdition] = useState(null);
+  const [, setSelectedEdition] = useState(null);
   const [editionData, setEditionData] = useState([]);
   const [showEditionSection, setShowEditionSection] = useState(false);
   const [showPreviewSection, setShowPreviewSection] = useState(false);
@@ -102,7 +105,7 @@ const Search = ({ user }) => {
       } else {
         alert("Edition not found for that ISBN.");
       }
-    } catch (error) {
+    } catch {
       alert("Edition not found for that ISBN.");
     }
   };
@@ -152,8 +155,19 @@ const Search = ({ user }) => {
     }
   };
 
+  const handleSkillChange = (e) => {
+    if (e.target.id === 'skill-input') {
+      // Manual input
+      setSkillInput(e.target.value);
+    } else {
+      // Dropdown selection
+      setSkillInput(e.target.value);
+    }
+  };
+
   const handleAddToLibrary = async () => {
-    if (!skillInput.trim()) {
+    const finalSkillInput = skillInput === '__manual__' ? '' : skillInput;
+    if (!finalSkillInput.trim()) {
       alert("Please enter a skill.");
       return;
     }
@@ -169,7 +183,7 @@ const Search = ({ user }) => {
       author: previewInfo.author,
       coverurl: previewInfo.coverUrl,
       pages: pages,
-      subject: skillInput.trim(),
+      subject: finalSkillInput.trim(),
       isbn: previewInfo.isbn,
     };
 
@@ -187,113 +201,41 @@ const Search = ({ user }) => {
         const errorData = await response.json();
         alert(errorData.error || "Failed to add book.");
       }
-    } catch (error) {
+    } catch {
       alert("Failed to add book.");
     }
   };
 
   return (
     <main>
-      <input
-        type="text"
-        id="book-search-bar"
-        placeholder="Search for a book..."
-        value={searchQuery}
-        onChange={handleSearchInput}
+      <BookSearchBar
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchInput}
+        autocompleteList={autocompleteList}
+        onBookSelect={selectBook}
       />
-      
-      {autocompleteList.length > 0 && (
-        <ul id="autocomplete-list">
-          {autocompleteList.map((book, index) => (
-            <li key={index} onClick={() => selectBook(book)}>
-              {book.displayText}
-            </li>
-          ))}
-        </ul>
-      )}
 
       {showEditionSection && (
-        <div id="edition-section">
-          <label htmlFor="edition-dropdown">Select Edition:</label>
-          <select 
-            id="edition-dropdown" 
-            onChange={(e) => showPreview(editionData[e.target.value])}
-          >
-            {editionData.map((ed, idx) => (
-              <option key={idx} value={idx}>
-                {ed.title || selectedWork?.title} ({ed.publish_date || "Unknown"})
-                {ed.publishers ? " - " + ed.publishers.join(", ") : ""}
-              </option>
-            ))}
-          </select>
-          <span>or enter ISBN:</span>
-          <input
-            type="text"
-            id="manual-isbn"
-            placeholder="ISBN"
-            value={manualIsbn}
-            onChange={(e) => setManualIsbn(e.target.value)}
-          />
-          <button id="isbn-search-btn" onClick={handleIsbnSearch}>
-            Find Edition
-          </button>
-        </div>
+        <EditionSelector
+          editionData={editionData}
+          selectedWork={selectedWork}
+          onEditionSelect={showPreview}
+          manualIsbn={manualIsbn}
+          onIsbnChange={(e) => setManualIsbn(e.target.value)}
+          onIsbnSearch={handleIsbnSearch}
+        />
       )}
 
       {showPreviewSection && (
-        <div id="preview-section">
-          <h3>Book Preview</h3>
-          <img 
-            id="preview-cover" 
-            src={previewInfo.coverUrl} 
-            alt="Book cover" 
-            style={{ maxHeight: '100px' }}
-          />
-          <div id="preview-info">
-            <strong>{previewInfo.title}</strong><br />
-            Author: {previewInfo.author}<br />
-            Pages: {previewInfo.pages ? (
-              <span id="pages-span">{previewInfo.pages}</span>
-            ) : (
-              <input
-                type="number"
-                id="pages-input"
-                min="1"
-                placeholder="Enter pages"
-                value={pagesInput}
-                onChange={(e) => setPagesInput(e.target.value)}
-              />
-            )}<br />
-            Publisher: {previewInfo.publisher}<br />
-            Year: {previewInfo.year}<br />
-            ISBN: {previewInfo.isbn}
-          </div>
-          <label htmlFor="skill-input">Skill:</label>
-          <select
-            id="skill-dropdown"
-            value={skillInput}
-            onChange={(e) => setSkillInput(e.target.value)}
-          >
-            <option value="">--Select a skill--</option>
-            {skillList.map(skill => (
-              <option key={skill} value={skill}>{skill}</option>
-            ))}
-            <option value="__manual__">Other (enter manually)</option>
-          </select>
-          {skillInput === '__manual__' && (
-            <input
-              type="text"
-              id="skill-input"
-              value={skillInput === '__manual__' ? '' : skillInput}
-              onChange={(e) => setSkillInput(e.target.value)}
-              placeholder="Enter skill name"
-              style={{ marginLeft: '8px' }}
-            />
-          )}
-          <button id="add-to-library-btn" onClick={handleAddToLibrary}>
-            Add to Library
-          </button>
-        </div>
+        <BookPreview
+          previewInfo={previewInfo}
+          pagesInput={pagesInput}
+          onPagesChange={(e) => setPagesInput(e.target.value)}
+          skillInput={skillInput}
+          onSkillChange={handleSkillChange}
+          skillList={skillList}
+          onAddToLibrary={handleAddToLibrary}
+        />
       )}
     </main>
   );

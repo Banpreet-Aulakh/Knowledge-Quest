@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const Login = ({ onLogin }) => {
+const Register = ({ onLogin }) => {
   const [formData, setFormData] = useState({
     username: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -20,13 +21,21 @@ const Login = ({ onLogin }) => {
     e.preventDefault();
     setError('');
 
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
     try {
-      const response = await fetch('/login', {
+      const response = await fetch('/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: new URLSearchParams(formData),
+        body: new URLSearchParams({
+          username: formData.username,
+          password: formData.password
+        }),
         credentials: 'include'
       });
 
@@ -35,9 +44,10 @@ const Login = ({ onLogin }) => {
         onLogin(userData.user);
         navigate('/');
       } else {
-        setError('Invalid username or password');
+        const errorData = await response.json();
+        setError(errorData.error || 'Registration failed');
       }
-    } catch (error) {
+    } catch {
       setError('An error occurred. Please try again.');
     }
   };
@@ -45,7 +55,7 @@ const Login = ({ onLogin }) => {
   return (
     <main>
       <div className="auth-container">
-        <h2>Login</h2>
+        <h2>Register</h2>
         <form className="auth-form" onSubmit={handleSubmit}>
           {error && <p style={{ color: 'var(--accent-red)' }}>{error}</p>}
           <label htmlFor="username">Username:</label>
@@ -66,14 +76,23 @@ const Login = ({ onLogin }) => {
             onChange={handleChange}
             required
           />
-          <button type="submit">Login</button>
+          <label htmlFor="confirmPassword">Confirm Password:</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            required
+          />
+          <button type="submit">Register</button>
         </form>
         <p>
-          Don't have an account? <Link to="/register">Register here</Link>
+          Already have an account? <Link to="/login">Login here</Link>
         </p>
       </div>
     </main>
   );
 };
 
-export default Login;
+export default Register;

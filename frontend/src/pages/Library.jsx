@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import BookCard from '../components/BookCard';
+import ExpFloater from '../components/ExpFloater';
 
-const Library = ({ user }) => {
+const Library = () => {
   const [data, setData] = useState([]);
   const [completed, setCompleted] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expFloaters, setExpFloaters] = useState([]);
 
   useEffect(() => {
     fetchLibraryData();
@@ -49,23 +52,23 @@ const Library = ({ user }) => {
       } else {
         alert('Failed to update pages read.');
       }
-    } catch (error) {
+    } catch {
       alert('Error updating progress.');
     }
   };
 
   const showExpFloat = (text, levelUp = false) => {
-    const el = document.createElement('div');
-    el.className = 'exp-float' + (levelUp ? ' levelup' : '');
-    el.textContent = text;
-    document.body.appendChild(el);
+    const id = Date.now() + Math.random();
+    const floater = { id, text, levelUp };
+    setExpFloaters(prev => [...prev, floater]);
+    
     setTimeout(() => {
-      el.style.opacity = 1;
-    }, 10);
-    setTimeout(() => {
-      el.style.opacity = 0;
-      el.remove();
+      setExpFloaters(prev => prev.filter(f => f.id !== id));
     }, 1200);
+  };
+
+  const removeExpFloater = (id) => {
+    setExpFloaters(prev => prev.filter(f => f.id !== id));
   };
 
   if (loading) {
@@ -79,31 +82,12 @@ const Library = ({ user }) => {
         {data && data.length > 0 ? (
           <ul className="library-list">
             {data.map((book, index) => (
-              <li key={index} className="library-book">
-                <img 
-                  src={book.coverurl} 
-                  alt={`Book cover for ${book.title}`} 
-                  className="book-cover"
-                />
-                <div className="library-book-info">
-                  <strong>{book.title}</strong> by {book.author}<br />
-                  <em>Subject:</em> {book.subject}<br />
-                  <form onSubmit={(e) => handleUpdatePages(e, book.isbn)} className="pages-form">
-                    <label>
-                      Pages Read:
-                      <input 
-                        type="number" 
-                        name="pagesRead" 
-                        defaultValue={book.pagesread} 
-                        min={book.pagesread + 1} 
-                        max={book.pages}
-                      />
-                      / {book.pages}
-                    </label>
-                    <button type="submit">Update</button>
-                  </form>
-                </div>
-              </li>
+              <BookCard 
+                key={index} 
+                book={book} 
+                type="library" 
+                onUpdatePages={handleUpdatePages}
+              />
             ))}
           </ul>
         ) : (
@@ -116,22 +100,25 @@ const Library = ({ user }) => {
           <h3>Completed Books</h3>
           <ul className="library-list completed-list">
             {completed.map((book, index) => (
-              <li key={index} className="library-book completed">
-                <img 
-                  src={book.coverurl} 
-                  alt={`Book cover for ${book.title}`} 
-                  className="book-cover"
-                />
-                <div className="library-book-info">
-                  <strong>{book.title}</strong> by {book.author}<br />
-                  <em>Subject:</em> {book.subject}<br />
-                  <span className="completed-label">Completed!</span>
-                </div>
-              </li>
+              <BookCard 
+                key={index} 
+                book={book} 
+                type="completed"
+              />
             ))}
           </ul>
         </section>
       )}
+      
+      {/* Experience floaters */}
+      {expFloaters.map(floater => (
+        <ExpFloater
+          key={floater.id}
+          text={floater.text}
+          levelUp={floater.levelUp}
+          onRemove={() => removeExpFloater(floater.id)}
+        />
+      ))}
     </main>
   );
 };
