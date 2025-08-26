@@ -7,10 +7,13 @@
   "start": "node backend/index.js",
   "dev": "concurrently \"npm run server\" \"npm run client\"",
   "server": "node backend/index.js",
-    "client": "cd frontend && npm run dev",
-    "build": "cd frontend && npm run build",
-    "install-client": "cd frontend && npm install",
-    "heroku-postbuild": "npm run install-client && npm run build"
+  "client": "cd frontend && npm run dev",
+  "build": "cd frontend && npm run build",
+  "install-client": "cd frontend && npm install",
+  "postinstall": "cd frontend && npm install && npm run build"
+  },
+  "engines": {
+    "node": "18.x"
   },
   "type": "module",
   "author": "Banpreet Aulakh",
