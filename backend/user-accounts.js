@@ -2,8 +2,17 @@ import bcrypt from "bcrypt";
 import passport from "passport";
 import session from "express-session";
 import { Strategy } from "passport-local";
-import { connectPgSimple } from "connect-pg-simple";
 import db from "./db.js";
+
+let connectPgSimple = null;
+try {
+  const pgSessionModule = await import('connect-pg-simple');
+  connectPgSimple = pgSessionModule.default;
+} catch (err) {
+  console.warn("connect-pg-simple import failed:", err.message);
+  console.warn("Falling back to MemoryStore for sessions (not suitable for production)");
+}
+
 
 const saltRounds = 10;
 
@@ -18,24 +27,30 @@ export function initializeLoginMiddleWare(app) {
     app.set("trust proxy", 1);
   }
 
-  const PgSession = connectPgSimple(session);
+  const sessionConfig = {
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    },
+  };
 
-  app.use(
-    session({
-      store: new PgSession({
-        pool: db, // reusing pool from backend
-        tableName: "session",
-      }),
-      secret: process.env.SESSION_SECRET,
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        maxAge: 1000 * 60 * 60 * 24,
-        secure: process.env.NODE_ENV === "production", // only use HTTPS in prod for cookies
-        sameSite: "lax",
-      },
-    })
-  );
+  if (connectPgSimple) {
+    const PgSession = connectPgSimple(session);
+    sessionConfig.store = new PgSession({
+      pool: db, // reusing pool from backend
+      tableName: "session",
+    });
+  } else {
+    console.warn(
+      "WARNING: Using MemoryStore for sessions. This is NOT suitable for production."
+    );
+  }
+
+  app.use(session(sessionConfig));
 
   app.use(passport.initialize());
   app.use(passport.session());
