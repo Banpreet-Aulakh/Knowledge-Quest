@@ -2,20 +2,41 @@ import bcrypt from "bcrypt";
 import passport from "passport";
 import session from "express-session";
 import { Strategy } from "passport-local";
+import { connectPgSimple } from "connect-pg-simple";
+import db from "./db.js";
 
 const saltRounds = 10;
 
 export function initializeLoginMiddleWare(app) {
+  if (!process.env.SESSION_SECRET) {
+    console.error("SESSION_SECRET is not set. Exiting");
+    process.exit(1);
+  }
+
+  // Render proxy stuff for cookies
+  if (process.env.NODE_ENV === "production") {
+    app.set("trust proxy", 1);
+  }
+
+  const PgSession = connectPgSimple(session);
+
   app.use(
     session({
+      store: new PgSession({
+        pool: db, // reusing pool from backend
+        tableName: "session",
+      }),
       secret: process.env.SESSION_SECRET,
       resave: false,
-      saveUninitialized: true,
+      saveUninitialized: false,
       cookie: {
         maxAge: 1000 * 60 * 60 * 24,
+        secure: process.env.NODE_ENV === "production", // only use HTTPS in prod for cookies
+        sameSite: "lax",
       },
     })
   );
+
   app.use(passport.initialize());
   app.use(passport.session());
 }
@@ -46,7 +67,9 @@ export function attachUserAccountEndpoints(app, db) {
               req.login(user, (err) => {
                 if (err) {
                   console.log(err);
-                  return res.status(500).json({ error: "Error logging in after registration" });
+                  return res
+                    .status(500)
+                    .json({ error: "Error logging in after registration" });
                 }
                 res.json({ user: user });
               });
@@ -84,34 +107,37 @@ export function attachUserAccountEndpoints(app, db) {
 export function setupPassport(db) {
   passport.use(
     "local",
-    new Strategy({ usernameField: "username" }, async (username, password, cb) => {
-      try {
-        const result = await db.query(
-          "SELECT * FROM AppUser WHERE email = $1",
-          [username] // Frontend sends username, but we'll use it as email
-        );
-        console.log("LOGGING IN");
-        if (result.rows.length > 0) {
-          const user = result.rows[0];
-          const storedHashedPassword = user.password;
-          bcrypt.compare(password, storedHashedPassword, (err, result) => {
-            if (err) {
-              return cb(err);
-            } else {
-              if (result) {
-                return cb(null, user);
+    new Strategy(
+      { usernameField: "username" },
+      async (username, password, cb) => {
+        try {
+          const result = await db.query(
+            "SELECT * FROM AppUser WHERE email = $1",
+            [username] // Frontend sends username, but we'll use it as email
+          );
+          console.log("LOGGING IN");
+          if (result.rows.length > 0) {
+            const user = result.rows[0];
+            const storedHashedPassword = user.password;
+            bcrypt.compare(password, storedHashedPassword, (err, result) => {
+              if (err) {
+                return cb(err);
               } else {
-                return cb(null, false);
+                if (result) {
+                  return cb(null, user);
+                } else {
+                  return cb(null, false);
+                }
               }
-            }
-          });
-        } else {
-          return cb("User not found");
+            });
+          } else {
+            return cb("User not found");
+          }
+        } catch (err) {
+          return cb(err);
         }
-      } catch (err) {
-        return cb(err);
       }
-    })
+    )
   );
   passport.serializeUser((user, cb) => {
     cb(null, user.id); // Save only the user ID
